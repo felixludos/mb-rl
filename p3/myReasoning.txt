@@ -1,0 +1,129 @@
+# myReasoning.txt
+
+# -----------
+
+# 
+
+# This is a text file that provides the reasoning for choosing the parameters
+
+# in the analysis.py file. 
+
+
+
+
+##################################
+
+# ANALYSIS QUESTIONS REASONING #
+
+##################################
+
+
+
+# question2:
+
+# -----------
+
+# According to the question, you need to change either the discount factor or  
+
+# the noise. Complete 1. and 2. by deleting one of the options inside the 
+
+# bracket, and give brief explanation to 3.
+
+# 1.  I modified the noise parameter.
+
+# 2.  I decreased the default value.
+
+# 3.  Why does the change work?
+
+#     Answer: Ideally the agent would also go straight toward the goal state (with 100 utility), 
+however due to noise, there is a chance that even if the agent tries to head straight for the goal, 
+it will fall off the bridge. Therefore, if you change the noise to 0, there is no chance of falling 
+off the bridge, so the agent will happily cross over to the finish and collect the 100 utility reward.
+
+#     
+
+#     
+
+#  
+   
+
+
+# question3:
+
+# -----------
+
+# In this layout, you are asked to provide parameters that causes the agent to 
+
+# have distinct optimal policy types, as described in subproblems a.~e.
+
+# Based on your choice of parameters, answer the following:
+
+# 1.  In the layout, the close exit (+1) has smaller reward than the distant 
+
+#     exit (+10). Intuitively, optimal agents seek actions with high utility,
+
+#     so what did you do to make agents in a. and b. to favor the close exit
+
+#     (+1) instead of the distant exit (+10)?
+
+#     Answer: Decreasing the discount (making in closer to 0), will make the distant goal less attractive 
+because it is farther away, and a small discount factor will decrease the utility of going farther.
+
+#     
+
+#     
+
+#     
+
+# 2.  In both a. and c., the agent risks the cliff in order to get to the goal,
+
+#     yet in b. and d. the agent acts more conservatively by taking the longer 
+
+#     route. What is the key parameter(s) for such difference?
+
+#     Delete the ones in the bracket that you think is irrelevent.
+
+#     The parameter {discount factor/noise/living reward} decide(s) the level of 
+
+#     conservatism of an agent.
+
+#     
+
+# 3.  For your answer in 2., why do you think so?
+
+#     Answer: The noise is the key parameter, because although the agent will never
+ purposefully jump down the cliff, if the noise is non zero, then there is still a
+  chance it will fall down when walking along the cliff. So decreasing the noise makes the cliff safer.
+
+#     
+
+#     
+
+#
+
+   
+
+# question6:
+
+# -----------
+
+# After finishing this question, explain what the importance of noise is?
+
+# Answer: Noise makes it more difficult for the agent to get across the bridge to the high utility state, 
+because when it's exploring further down the bridge, even if it knows not to jump off the bridge, it may 
+still fall off due to noise, however that would still decrease the expected utility of further crossing 
+the bridge, making it increasingly difficult to ever explore further. Therefore, noise will change the 
+expected utility of states.
+
+#     
+
+# 
+#
+  
+
+
+##################################
+
+# END OF FILE. HAPPY CODING! 
+#
+##################################
