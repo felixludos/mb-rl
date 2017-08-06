@@ -25,10 +25,10 @@ LAYER1_SIZE = 400
 LAYER2_SIZE = 300
 LEARNING_RATE = 1e-4
 TAU = 0.001
-BATCH_SIZE = 64
+BATCH_SIZE = 32 #64
 
 REPLAY_BUFFER_SIZE = 1000000
-REPLAY_START_SIZE = 10000
+REPLAY_START_SIZE = 100 #10000
 BATCH_SIZE = 64
 GAMMA = 0.99
 
@@ -48,41 +48,48 @@ def main(argv):
 
 	for episode in xrange(EPISODES):
 
-		print 'Episode', episode,
+		print 'Episode', episode
 
 		net.train()
 		target_net.train() # not really necessary?
 
-		state = Variable(torch.from_numpy(env.reset().reshape(1,state_dim)))
+		state = torch.from_numpy(env.reset().reshape(1,state_dim)).float()
 		noise.reset()
 
 		# Train
 		for step in xrange(env.spec.timestep_limit):
 
 			# Take noisy action - for exploration
-			action = net.getAction(state)[0] + noise.noise()
-			new_state, reward, done, _ = env.step(action.data)
+			action = net.getAction(Variable(state)).data + torch.from_numpy(noise.noise()).float()
+			new_state, reward, done, _ = env.step(action.numpy().reshape((action_dim,)))
+			new_state = torch.from_numpy(new_state.reshape(1,state_dim)).float()
 
 			memory.add(state,action,reward,new_state,done)
 			if memory.count() > REPLAY_START_SIZE:
 				minibatch = memory.get_batch(BATCH_SIZE)
-				state_batch = np.asarray([data[0] for data in minibatch])
-				action_batch = np.asarray([data[1] for data in minibatch])
+				state_batch = torch.cat([data[0] for data in minibatch],dim=0)
+				action_batch = torch.cat([data[1] for data in minibatch],dim=0)
 				reward_batch = np.asarray([data[2] for data in minibatch])
-				next_state_batch = np.asarray([data[3] for data in minibatch])
+				next_state_batch = torch.cat([data[3] for data in minibatch])
 				done_batch = np.asarray([data[4] for data in minibatch])
 
 				# resize action_batch (?)
-				action_batch = np.resize(action_batch,[BATCH_SIZE,action_dim])
+				#action_batch = action_batch.view([BATCH_SIZE,action_dim])
+
+				next_action_batch = target_net.getAction(Variable(next_state_batch))
+				value_batch = target_net.getValue(Variable(next_state_batch), next_action_batch)
 
 				# calculate y_batch - using targets
-				next_action_batch, value_batch = zip(*[target_net(next_state) for next_state in next_state_batch])
-				y_batch = [reward + GAMMA * value if not done else reward
-							for reward, value, done in zip(reward_batch,value_batch,done_batch)]
-				y_batch = np.resize(y_batch,[BATCH_SIZE,1])
+				#next_action_batch, value_batch = zip(*[target_net(Variable(next_state)) for next_state in next_state_batch])
+				y_batch = [reward + GAMMA * value if not done else Tensor(reward)
+							for reward, value, done in zip(reward_batch,value_batch.split(1),done_batch)]
+				print y_batch
+				y_batch = torch.cat(y_batch,dim=0)
+				#y_batch = Variable(torch.from_numpy(np.resize(y_batch,[BATCH_SIZE,1])).float(),requires_grad=False)
 
 				# optimize net 1 step
-				loss = criterion(net(state_batch), y_batch)
+				print state_batch
+				loss = criterion(net(Variable(state_batch))[1], y_batch)
 				optimizer.zero_grad()
 				loss.backward()
 				optimizer.step()
@@ -93,10 +100,10 @@ def main(argv):
 						target_param.data.mul_(1 - TAU)
 						target_param.data.add_(TAU, param.data)
 
-			state = Variable(torch.from_numpy(new_state.reshape(1,state_dim)))
+			state = new_state
 			if done: break
 		
-		print '- training complete'
+		print '- training complete', step
 
 		# Test
 		if episode % 100 == 0 and episode > 100:
@@ -121,7 +128,7 @@ class ActorCriticNet(nn.Module):
 		self.critic = CriticNet(state_dim, action_dim)
 
 	def forward(self, state):
-		action = self.self.actor(state)
+		action = self.actor(state)
 		value = self.critic(state, action)
 		return value, action
 
