@@ -42,7 +42,7 @@ I-1
 I0
 tp17
 bI00
-S'\xd5\xb4s3\xb4\xc5\xd9\xbf'
+S'\x00\x00\x00\x00\x00\x00\x00\x00'
 p18
 tp19
 bsS'action_dimension'

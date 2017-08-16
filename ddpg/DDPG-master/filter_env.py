@@ -16,32 +16,26 @@ def makeFilteredEnv(env):
     def __init__(self):
       self.__dict__.update(env.__dict__) # transfer properties
 
-      self.verbose = False
-    
       # Observation space
-      #if np.any(obsp.high < 1e10):
-      h = obsp.high
-      l = obsp.low
-      sc = h-l
-      self.o_c = (h+l)/2.
-      self.o_sc = sc/2.
-      #print 'o_c', self.o_c
-      #print 'o_sc', self.o_sc
-      #else:
-      #  self.o_c = np.zeros_like(obsp.high)
-      #  self.o_sc = np.ones_like(obsp.high)
+      if np.any(obsp.high < 1e10):
+        h = obsp.high
+        l = obsp.low
+        sc = h-l
+        self.o_c = (h+l)/2.
+        self.o_sc = sc / 2.
+      else:
+        self.o_c = np.zeros_like(obsp.high)
+        self.o_sc = np.ones_like(obsp.high)
 
       # Action space
       h = acsp.high
       l = acsp.low
       sc = (h-l)
-      self.a_c = (h+l) / 2.
+      self.a_c = (h+l)/2.
       self.a_sc = sc / 2.
-      #print 'a_c', self.a_c
-      #print 'a_sc', self.a_sc
-      
+
       # Rewards
-      self.r_sc = 1. / 16.
+      self.r_sc = 0.1
       self.r_c = 0.
 
       # Special cases
@@ -54,12 +48,12 @@ def makeFilteredEnv(env):
         self.r_c = 0.
     '''
       # Check and assign transformed spaces
-      #self.observation_space = gym.spaces.Box(self.filter_observation(obsp.low),
-      #                                        self.filter_observation(obsp.high))
-      #self.action_space = gym.spaces.Box(-np.ones_like(acsp.high),np.ones_like(acsp.high))
-      #def assertEqual(a,b): assert np.all(a == b), "{} != {}".format(a,b)
-      #assertEqual(self.filter_action(self.action_space.low), acsp.low)
-      #assertEqual(self.filter_action(self.action_space.high), acsp.high)
+      self.observation_space = gym.spaces.Box(self.filter_observation(obsp.low),
+                                              self.filter_observation(obsp.high))
+      self.action_space = gym.spaces.Box(-np.ones_like(acsp.high),np.ones_like(acsp.high))
+      def assertEqual(a,b): assert np.all(a == b), "{} != {}".format(a,b)
+      assertEqual(self.filter_action(self.action_space.low), acsp.low)
+      assertEqual(self.filter_action(self.action_space.high), acsp.high)
 
     def filter_observation(self,obs):
       return (obs-self.o_c) / self.o_sc
@@ -72,41 +66,20 @@ def makeFilteredEnv(env):
       return self.r_sc*reward+self.r_c
 
     def step(self,action):
-        
-      if self.verbose:
-          print '***a:',action, '->',
 
       ac_f = np.clip(self.filter_action(action),self.action_space.low,self.action_space.high)
-        
-      if self.verbose:
-          print ac_f
 
       obs, reward, term, info = env_type.step(self,ac_f) # super function
-      
-      if self.verbose:
-          print '***r:',reward, '->',
-      
-      reward_f = self.filter_reward(reward)
-      if self.verbose:
-          print reward_f
-        
-      if self.verbose:
-          print '***   s:',obs,'->',
 
       obs_f = self.filter_observation(obs)
-        
-      if self.verbose:
-          print obs_f
-            
-      
 
-      return obs_f, reward_f, term, info
+      return obs_f, reward, term, info
 
   fenv = FilteredEnv()
 
   print('True action space: ' + str(acsp.low) + ', ' + str(acsp.high))
   print('True state space: ' + str(obsp.low) + ', ' + str(obsp.high))
-  print('Filtered action space: ' + str((acsp.low-fenv.a_c)/fenv.a_sc) + ', ' + str((acsp.high-fenv.a_c)/fenv.a_sc))
-  print('Filtered state space: ' + str((obsp.low-fenv.o_c)/fenv.o_sc) + ', ' + str((obsp.high-fenv.o_c)/fenv.o_sc))
+  print('Filtered action space: ' + str(fenv.action_space.low) + ', ' + str(fenv.action_space.high))
+  print('Filtered state space: ' + str(fenv.observation_space.low) + ', ' + str(fenv.observation_space.high))
 
   return fenv

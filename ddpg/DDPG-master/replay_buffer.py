@@ -1,13 +1,6 @@
 from collections import deque
 import random
 
-CONSTANT_BATCH = False # returns the first [batch_size] experiences
-
-if CONSTANT_BATCH:
-    print 'WARNING: replay buffer is not using random batches'
-
-random.seed(5)
-
 class ReplayBuffer(object):
 
     def __init__(self, buffer_size):
@@ -17,12 +10,6 @@ class ReplayBuffer(object):
 
     def get_batch(self, batch_size):
         # Randomly sample batch_size examples
-        if CONSTANT_BATCH:
-            batch = []
-            for i in xrange(batch_size):
-                batch.append(self.buffer[i])
-            return batch
-
         return random.sample(self.buffer, batch_size)
 
     def size(self):
