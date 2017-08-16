@@ -1,7 +1,7 @@
 from collections import deque
 import random
 
-CONSTANT_BATCH = False # returns the first [batch_size] experiences
+CONSTANT_BATCH = True # returns the first [batch_size] experiences
 
 if CONSTANT_BATCH:
     print 'WARNING: replay buffer is not using random batches'

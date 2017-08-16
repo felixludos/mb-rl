@@ -44,7 +44,7 @@ class DDPG_TF:
         self.saver = tf.train.Saver(self.all_vars)
         if loadfilename is not None:
             self.saver.restore(self.sess, loadfilename)
-            print 'restore complete'
+            #print 'restore complete'
         
     def train(self):
         #print "train step",self.time_step
