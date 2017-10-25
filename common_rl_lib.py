@@ -24,13 +24,13 @@ class SafeDict(dict):
         return self.setdefault(idx, self.default)
 
 class Policy:
-    def __init__(self, decision=lambda x: None, default=None): # default chooses from action space if decision returns invalid action
+    def __init__(self, decision=lambda x, a: None, default=None): # default chooses from action space if decision returns invalid action
         self.decision = decision # lambda with state as input
         self.default = default # lambda with action_space as input
         if self.default is None:
             self.default = lambda actions: np.random.choice(actions)
     def decide(self, state, action_space): # ideally action space is a set of possible actions
-        action = self.decision(state) if state is not None else None
+        action = self.decision(state, action_space) if state is not None else None
         if action not in action_space: # invalid decision
             return self.default(action_space)
         return action
@@ -165,6 +165,15 @@ class GridMDP:
     def step(self, action):
         newstate = self.sample_probs(self.gridworld.getTransitionStatesAndProbs(self.state, action))
         reward = self.gridworld.getReward(self.state, action, newstate)
+        if reward < 0:
+            reward = -1.
+        if reward == 10:
+            reward = 1.
+        elif reward == 1:
+            reward = 0.1
+        reward -= .1
+        if newstate == 'TERMINAL_STATE':
+            newstate = (-1,-1)
         self.state = newstate
         return self.state, reward, self.gridworld.isTerminal(self.state)
     
